@@ -16,11 +16,48 @@
 #include <ctype.h>
 #include <time.h>
 
-static const char *dirPath = "/home/zoniacer/Downloads";
+static const char *dirPath = "/home/exynos/Downloads";
+static const char *log_path = "/home/exynos/SinSeiFS.log";
 
 char *en1 = "AtoZ_";
 
 int x = 0;
+
+int log_sinsei_info(char *command, const char *from, const char *to){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char mains[1000];
+    if(to == NULL){
+        sprintf(mains,"INFO::%02d%02d%02d-%02d:%02d:%02d:%s::%s\n",
+	tm.tm_mday, tm.tm_mon + 1, 1900 + tm.tm_year, tm.tm_hour, tm.tm_min, tm.tm_sec, command, from);
+    }else{
+        sprintf(mains,"INFO::%02d%02d%02d-%02d:%02d:%02d:%s::%s::%s\n",
+	tm.tm_mday, tm.tm_mon + 1, 1900 + tm.tm_year, tm.tm_hour, tm.tm_min, tm.tm_sec, command, from, to);
+    }
+	printf("%s", mains);
+	FILE *foutput = fopen(log_path, "a+");
+	fputs(mains, foutput);
+	fclose(foutput);
+	return 1;
+}
+
+int log_sinsei_warning(char *command, const char *from, const char *to){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char mains[1000];
+    if(to == NULL){
+        sprintf(mains,"WARNING::%02d%02d%02d-%02d:%02d:%02d:%s::%s\n",
+	tm.tm_mday, tm.tm_mon + 1, 1900 + tm.tm_year, tm.tm_hour, tm.tm_min, tm.tm_sec, command, from);
+    }else{
+        sprintf(mains,"WARNING::%02d%02d%02d-%02d:%02d:%02d:%s::%s::%s\n",
+	tm.tm_mday, tm.tm_mon + 1, 1900 + tm.tm_year, tm.tm_hour, tm.tm_min, tm.tm_sec, command, from, to);
+    }
+	printf("%s", mains);
+	FILE *foutput = fopen(log_path, "a+");
+	fputs(mains, foutput);
+	fclose(foutput);
+	return 1;
+}
 
 
 int ext_id(char *path)
@@ -140,6 +177,8 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		sprintf(fpath, "%s%s", dirPath, path);
 	}
 
+	log_sinsei_info("READDIR", path, NULL);
+
 	
 	int res = 0;
 	DIR *dp;
@@ -195,6 +234,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		sprintf(fpath, "%s%s", dirPath, path);
 	}
 
+	log_sinsei_info("READ", path, NULL);
 	int res = 0;
 	int fd = 0;
 
@@ -238,6 +278,8 @@ static int xmp_mkdir(const char *path, mode_t mode)
 	if (res == -1)
 		return -errno;
 
+	log_sinsei_info("MKDIR", path, NULL);
+
 	return 0;
 }
 
@@ -259,6 +301,8 @@ static int xmp_rename(const char *from, const char *to)
 	res = rename(frompath, topath);
 	if (res == -1)
 		return -errno;
+
+	log_sinsei_info("RENAME", from, to);
 
 	return 0;
 }
@@ -312,6 +356,8 @@ static int xmp_rmdir(const char *path)
 
 	if (res == -1)
 		return -errno;
+
+	log_sinsei_warning("RMDIR", path, NULL);
 
 	return 0;
 }
