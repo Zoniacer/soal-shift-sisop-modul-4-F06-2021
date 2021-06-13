@@ -16,12 +16,26 @@
 #include <ctype.h>
 #include <time.h>
 
-static const char *dirPath = "/home/exynos/Downloads";
-static const char *log_path = "/home/exynos/SinSeiFS.log";
+static char *dirPath = "/home/zoniacer/Downloads";
+static char *log_path = "/home/zoniacer/SinSeiFS.log";
 
 char *en1 = "AtoZ_";
 
 int x = 0;
+
+void tulisLog(char *from, char *to)
+{
+	int i;
+	for(i=strlen(to); i >=0 ; i--){
+		if(to[i] == '/')break;
+	}
+	if(strstr(to + i, en1) == NULL) return;
+	char logs[1024];
+	sprintf(logs, "%s -> %s\n", from, to);
+	FILE *log_file = fopen(log_path,"a+");
+	fputs(logs,log_file);
+	fclose(log_file);
+}
 
 int log_sinsei_info(char *command, const char *from, const char *to){
 	time_t t = time(NULL);
@@ -272,6 +286,8 @@ static int xmp_mkdir(const char *path, mode_t mode)
 		sprintf(fpath, "%s%s", dirPath, path);
 	}
 
+	tulisLog(dirPath, fpath);
+	
 	res = mkdir(fpath, mode);
 
 
@@ -297,7 +313,8 @@ static int xmp_rename(const char *from, const char *to)
 
 	sprintf(frompath, "%s%s", dirPath, from);
 	sprintf(topath, "%s%s", dirPath, to);
-
+	tulisLog(frompath, topath);
+	
 	res = rename(frompath, topath);
 	if (res == -1)
 		return -errno;
